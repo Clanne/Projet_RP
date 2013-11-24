@@ -9,8 +9,8 @@ vpath %.o obj/
 vpath main bin/
 vpath %.a lib/
 
-main : ping.o ip_header.o timer.o icmp_header.o| bin
-	gcc $(CFLAGS) -o main $(OPATH)ping.o  $(OPATH)timer.o $(OPATH)ip_header.o $(OPATH)icmp_header.o
+main : ping.o ip_header.o timer.o icmp_header.o set_sock.o| bin
+	gcc $(CFLAGS) -o main $(OPATH)ping.o  $(OPATH)timer.o $(OPATH)ip_header.o $(OPATH)icmp_header.o $(OPATH)set_sock.o
 	mv $@ bin/
 
 ping.o : ping.c ping.h icmp_header.h
@@ -18,6 +18,7 @@ icmp_header.o : icmp_header.c icmp_header.h ip_header.h
 ip_header.o : ip_header.c ip_header.h
 timer.o : timer.c timer.h
 timer_test.o : timer_test.c
+set_sock.o : set_sock.c set_sock.h
 
 %.o : | obj
 	gcc $(CFLAGS) -c $< $(IFLAGS)

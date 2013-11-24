@@ -9,6 +9,7 @@
 #include <sys/select.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include "set_sock.h"
 #include "icmp_header.h"
 #include "ip_header.h"
 #include "timer.h"
@@ -20,6 +21,6 @@ typedef struct{
 
 package_t* forge_ping_pack( unsigned int source_addr ,  unsigned int dest_addr );
 
-void ping_loop(char* hostname , package_t* pack);
+void ping_loop(struct addrinfo* dest_addr , package_t* pack);
 
 #endif

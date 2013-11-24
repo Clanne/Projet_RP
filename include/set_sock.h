@@ -1,11 +1,12 @@
 #ifndef SET_SOCK__H_
 #define SET_SOCK__H_
 
+#include <stdlib.h>
+#include <stdio.h>
 #include <sys/types.h> 
 #include <sys/socket.h>
 #include <netdb.h>
 
-void connect_socket_to_host( int sockfd , int prot , char* hostname );
-
+struct addrinfo* get_host_addr( char* hostname );
 
 #endif
