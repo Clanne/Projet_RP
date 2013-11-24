@@ -5,6 +5,10 @@
 #define TCP_NUM 6
 #define UDP_NUM 17
 
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
 typedef struct{
 	uint8_t version;
 	uint8_t ToS;

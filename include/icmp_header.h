@@ -3,6 +3,9 @@
 
 #define ECHO_REQUEST 8
 
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
 #include "ip_header.h"
 
 typedef struct{
