@@ -27,9 +27,16 @@ void ping_loop(struct addrinfo* dest_addr , package_t* pack){
 	struct timeval timeout;
 	
 	
+	
 	struct sockaddr_in* dest = (struct sockaddr_in*)(dest_addr->ai_addr) ;
 	pack->ipv4h.dest_ip = dest->sin_addr.s_addr ;
 	
+	char* dest_ad;
+	dest_ad = inet_ntoa( dest->sin_addr );
+	printf("%s\n" , dest_ad );
+	
+	pack->ipv4h.source_ip = inet_addr("109.217.245.73");
+
 	int i;
 	for (i = 0; i < 5 ; i++)
 	{
@@ -42,7 +49,7 @@ void ping_loop(struct addrinfo* dest_addr , package_t* pack){
 		packreceived = select( 1 , &sock , NULL , NULL , &timeout );
 		stoptimer( &t );
 		sprint_timervalue( &t , str );
-		if(packreceived)
+		if(packreceived > 0)
 			printf("package received in %s\n",str);
 		else printf("fail\n");
 	}

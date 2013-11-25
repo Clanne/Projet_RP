@@ -7,19 +7,19 @@ void forge_ipv4_header( ipv4_header_t* iph , unsigned int ipsource ,  unsigned i
 	iph->dest_ip = ipsource ;
 	iph->source_ip = ipdest ;
 	
-	iph->version += (4 << 4);
-	iph->version += 5;
+	iph->version += htons(4 << 4);
+	iph->version += htons(5);
 }
 
 
 void set_protocol( ipv4_header_t* iph , uint8_t protonum ){
-	iph->protocol = protonum ;
+	iph->protocol = htons(protonum) ;
 }
 
 void set_TTL( ipv4_header_t* iph , int ttl ){
-	iph->TTL = ttl ;
+	iph->TTL = htons(ttl) ;
 }
 
 void set_packet_length( ipv4_header_t* iph , uint16_t length ){
-	iph->length = length ;
+	iph->length = htons(length) ;
 }

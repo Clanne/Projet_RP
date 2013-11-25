@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <arpa/inet.h>
 
 typedef struct{
 	uint8_t version;
