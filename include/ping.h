@@ -21,6 +21,6 @@ typedef struct{
 
 package_t* forge_ping_pack( unsigned int source_addr ,  unsigned int dest_addr );
 
-void ping_loop(struct addrinfo* dest_addr , package_t* pack);
+void ping_loop(struct sockaddr* dest_addr , package_t* pack);
 
 #endif

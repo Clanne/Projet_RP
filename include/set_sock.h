@@ -8,6 +8,6 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
-struct addrinfo* get_host_addr( char* hostname );
+void get_host_addr( char* hostname , struct sockaddr* dest );
 
 #endif

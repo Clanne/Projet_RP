@@ -13,7 +13,7 @@ package_t* forge_ping_pack( unsigned int source_addr ,  unsigned int dest_addr )
 	return ping;
 }
 
-void ping_loop(struct addrinfo* dest_addr , package_t* pack){
+void ping_loop(struct sockaddr* dest_addr , package_t* pack){
 	
 	char str[10];
 	timer t;
@@ -27,12 +27,11 @@ void ping_loop(struct addrinfo* dest_addr , package_t* pack){
 	struct timeval timeout;
 	
 	
-	
-	struct sockaddr_in* dest = (struct sockaddr_in*)(dest_addr->ai_addr) ;
-	pack->ipv4h.dest_ip = dest->sin_addr.s_addr ;
+	struct sockaddr_in* ipv4_dest_addr = (struct sockaddr_in* ) dest_addr ;
+	pack->ipv4h.dest_ip = ipv4_dest_addr->sin_addr.s_addr ;
 	
 	char* dest_ad;
-	dest_ad = inet_ntoa( dest->sin_addr );
+	dest_ad = inet_ntoa( ipv4_dest_addr->sin_addr );
 	printf("%s\n" , dest_ad );
 	
 	pack->ipv4h.source_ip = inet_addr("109.217.245.73");
@@ -43,7 +42,7 @@ void ping_loop(struct addrinfo* dest_addr , package_t* pack){
 		timeout.tv_sec = 1;
 		timeout.tv_usec = 0;
 		
-		sendto( sockfd , (void*)pack ,sizeof( package_t ) , 0 , dest_addr->ai_addr ,  dest_addr->ai_addrlen );
+		sendto( sockfd , (void*)pack ,sizeof( package_t ) , 0 , dest_addr ,  sizeof( struct sockaddr_in ) );
 		
 		starttimer( &t ); 
 		packreceived = select( 1 , &sock , NULL , NULL , &timeout );
@@ -60,7 +59,11 @@ int main( int argc , char* argv[] ){
 	
 	package_t* pack = forge_ping_pack( 0 , 0 );
 	
-	ping_loop( get_host_addr(argv[1]) , pack );
+	struct sockaddr* dest_addr = malloc( sizeof (struct sockaddr_in) ) ;
+	
+	get_host_addr( argv[1] , dest_addr );
+	
+	ping_loop( dest_addr , pack );
 	exit(0);
 	
 }

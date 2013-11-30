@@ -1,7 +1,7 @@
 #include "set_sock.h"
 
 
-struct addrinfo* get_host_addr( char* hostname ){
+void get_host_addr( char* hostname , struct sockaddr* dest ){
 	
 	struct addrinfo *result , hints;
 	
@@ -15,5 +15,6 @@ struct addrinfo* get_host_addr( char* hostname ){
 		perror ("Client error (getaddrinfo)");
 		exit (EXIT_FAILURE);
 	}
-	return result;
+	
+	*dest = (struct sockaddr)(*result->ai_addr) ;
 }
