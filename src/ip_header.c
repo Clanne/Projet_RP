@@ -1,23 +1,19 @@
 #include "ip_header.h"
 
-void forge_ipv4_header( ipv4_header_t* iph , unsigned int ipsource ,  unsigned int ipdest ){
+void forge_ipv4_header( ipv4_header_t* iph  ){
 	
-	//~ ipv4_header_t* iph = malloc( sizeof( struct ipv4_header_t ) );
-	memset( iph , 0 , sizeof( ipv4_header_t ) );
-	iph->dest_ip = ipsource ;
-	iph->source_ip = ipdest ;
-	
-	iph->version += htons(4 << 4);
-	iph->version += htons(5);
+	memset( iph , 0 , sizeof( ipv4_header_t ) );	
+	iph->version += 4 << 4;
+	iph->version += 5;
 }
 
 
 void set_protocol( ipv4_header_t* iph , uint8_t protonum ){
-	iph->protocol = htons(protonum) ;
+	iph->protocol = protonum ;
 }
 
-void set_TTL( ipv4_header_t* iph , int ttl ){
-	iph->TTL = htons(ttl) ;
+void set_TTL( ipv4_header_t* iph , uint8_t ttl ){
+	iph->TTL = ttl ;
 }
 
 void set_packet_length( ipv4_header_t* iph , uint16_t length ){

@@ -24,11 +24,11 @@ typedef struct{
 }ipv4_header_t;
 
 
-void forge_ipv4_header( ipv4_header_t* iph , unsigned int ipsource ,  unsigned int ipdest );
+void forge_ipv4_header( ipv4_header_t* iph  );
 
 void set_protocol( ipv4_header_t* iph , uint8_t protonum );
 
-void set_TTL( ipv4_header_t* iph , int ttl );
+void set_TTL( ipv4_header_t* iph , uint8_t ttl );
 
 void set_packet_length( ipv4_header_t* iph , uint16_t length );
 

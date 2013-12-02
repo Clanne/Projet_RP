@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h>
@@ -19,7 +20,11 @@ typedef struct{
 	icmp_header_t icmph ;
 } package_t ;
 
-package_t* forge_ping_pack( unsigned int source_addr ,  unsigned int dest_addr );
+char* gethostip();
+
+package_t* forge_ping_pack(  );
+
+unsigned short cksum(uint16_t *addr, int len);
 
 void ping_loop(struct sockaddr* dest_addr , package_t* pack);
 
