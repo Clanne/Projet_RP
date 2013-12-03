@@ -1,6 +1,23 @@
 #include "set_sock.h"
 
 
+int create_raw_socket( int addr_family , int proto ){
+	
+	int sockfd , on;
+	
+	if( ( sockfd = socket( addr_family , SOCK_RAW , proto ) ) == -1 ){
+		perror( "socket creation failed\n" );
+		exit( EXIT_FAILURE );
+	}
+	
+	if(setsockopt( sockfd , IPPROTO_IP, IP_HDRINCL, &on, sizeof(int) ) < 0)
+    {
+        perror("setsockopt() error");
+        exit(EXIT_FAILURE);
+    }
+    return sockfd;
+}
+
 void get_host_addr( char* hostname , struct sockaddr* dest ){
 	
 	struct addrinfo *result , hints;
@@ -16,5 +33,6 @@ void get_host_addr( char* hostname , struct sockaddr* dest ){
 		exit (EXIT_FAILURE);
 	}
 	
-	*dest = (struct sockaddr)(*result->ai_addr) ;
+	*dest = *result->ai_addr;
+	freeaddrinfo( result );
 }

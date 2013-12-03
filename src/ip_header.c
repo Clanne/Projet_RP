@@ -7,6 +7,13 @@ void forge_ipv4_header( ipv4_header_t* iph  ){
 	iph->version += 5;
 }
 
+void set_destination( ipv4_header_t* iph , unsigned int ipdest){
+	iph->dest_ip  = ipdest ;
+}
+
+void set_source( ipv4_header_t* iph , unsigned int ipsource ){
+	iph->source_ip = ipsource ;
+}
 
 void set_protocol( ipv4_header_t* iph , uint8_t protonum ){
 	iph->protocol = protonum ;

@@ -1,10 +1,6 @@
 #ifndef IP_HEADER__H_
 #define IP_HEADER__H_
 
-#define ICMP_NUM 1
-#define TCP_NUM 6
-#define UDP_NUM 17
-
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -25,6 +21,10 @@ typedef struct{
 
 
 void forge_ipv4_header( ipv4_header_t* iph  );
+
+void set_destination( ipv4_header_t* iph , unsigned int ipdest);
+
+void set_source( ipv4_header_t* iph , unsigned int ipsource );
 
 void set_protocol( ipv4_header_t* iph , uint8_t protonum );
 

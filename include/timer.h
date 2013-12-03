@@ -11,6 +11,8 @@ void starttimer( timer* t );
 
 void stoptimer( timer* t );
 
+int timeout( timer* t );
+
 void tvdiff( struct timeval debut , struct timeval fin , struct timeval* resultat );
 
 void sprint_timervalue(timer* t , char* retstr);//renvoit chaine de caracteres representant le temps en ms

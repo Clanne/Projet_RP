@@ -1,6 +1,7 @@
 #ifndef ICMP_HEADER__H_
 #define ICMP_HEADER__H_
 
+#define ECHO_REPLY 0
 #define ECHO_REQUEST 8
 
 #include <stdio.h>

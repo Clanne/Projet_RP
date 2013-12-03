@@ -8,6 +8,8 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
+int create_raw_socket( int addr_family , int proto );
+
 void get_host_addr( char* hostname , struct sockaddr* dest );
 
 #endif

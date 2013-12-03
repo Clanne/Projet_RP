@@ -20,7 +20,7 @@ package_t* forge_ping_pack(  ){
 	set_packet_length( &ping->ipv4h , sizeof( package_t ) );
 	set_protocol( &ping->ipv4h , IPPROTO_ICMP );
 	
-	ping->ipv4h.identification = htons(321);
+	ping->ipv4h.identification = htons(123);
 	
 	forge_icmp_header( &ping->icmph );
 	set_icmp_type( &ping->icmph , ECHO_REQUEST );
@@ -30,82 +30,75 @@ package_t* forge_ping_pack(  ){
 
 void ping_loop(struct sockaddr* dest_addr , package_t* pack){
 	
-	ipv4_header_t* iph ;
 	char str[10];
-	int buf[100];
+	char* reply_addr ;
+	int* buf = malloc( 128 );
 	timer t;
-	int sockfd ;
-	int packreceived , on;
-	int nbbytes ;
+	//~ int packreceived;
+	int sockfd = create_raw_socket( AF_INET , IPPROTO_ICMP );
 	
-	if( ( sockfd = socket( AF_INET , SOCK_RAW , IPPROTO_ICMP ) ) == -1 ){
-		perror( "socket creation failed\n" );
-		exit( EXIT_FAILURE );
-	}
-	
-	if(setsockopt( sockfd , IPPROTO_IP, IP_HDRINCL, &on, sizeof(on)) < 0)
-    {
-        perror("setsockopt() for IP_HDRINCL error");
-        exit(EXIT_FAILURE);
-    }
+	socklen_t addr_length = sizeof( struct sockaddr_in );
 	
 	fd_set sock;
 	FD_ZERO( &sock );
 	FD_SET(sockfd , &sock);
 	
-	struct timeval timeout;
+	struct timeval tout;
+	
+	//~ ((struct sockaddr_in*)dest_addr)->sin_port =  3490 ;
 	
 	struct sockaddr_in* ipv4_dest_addr = (struct sockaddr_in* ) dest_addr ;
-	pack->ipv4h.dest_ip = ipv4_dest_addr->sin_addr.s_addr ;
 	
-	char* dest_ad;
-	struct in_addr test = { pack->ipv4h.dest_ip };
-	dest_ad = inet_ntoa( test );
-	printf("%s\n" , dest_ad );
+	printf("Sending pings to:%s\n" , inet_ntoa(ipv4_dest_addr->sin_addr));
 	
-	pack->ipv4h.source_ip = inet_addr("172.17.13.115");
+	set_destination( &pack->ipv4h , ipv4_dest_addr->sin_addr.s_addr );
+	
+	set_source( &pack->ipv4h , inet_addr("172.17.14.10") );
 
 	//checksums
 	pack->icmph.checksum = cksum((uint16_t*) &pack->icmph , sizeof(icmp_header_t) );
 	pack->ipv4h.checksum = cksum((uint16_t*) &pack , sizeof(package_t) );
 
 
-	int i;
+	int i, nbrecv = 0;
 	for (i = 0; i < 5 ; i++)
 	{
 		
+		pack->icmph.seqnum = htons(i);
+		printf("send %d\n" , ntohs( pack->icmph.seqnum ) );
+		
 		FD_ZERO( &sock );
 		FD_SET(sockfd , &sock);
-		timeout.tv_sec = 1;
-		timeout.tv_usec = 0;
+		tout.tv_sec = 1;
+		tout.tv_usec = 0;
 		
-		nbbytes = sendto( sockfd , (void*)pack , sizeof( package_t ) , 0 , dest_addr ,  sizeof( struct sockaddr_in ) );
-		if(nbbytes == -1)
-			perror("send \n" );
+		if( sendto( sockfd , (void*)pack , sizeof( package_t ) , 0 , dest_addr ,  addr_length ) == -1 )
+			perror("send() error \n" );
 		
 		starttimer( &t );
-		packreceived = select( sockfd + 1 , &sock , NULL , NULL , &timeout );
+		select( sockfd + 1 , &sock , NULL , NULL , &tout );
 		stoptimer( &t );
 		sprint_timervalue( &t , str );
 		
-		if( FD_ISSET( sockfd , &sock ) && packreceived > 0 ){
-			
-			//~ socklen_t addrlen = sizeof( struct sockaddr_in );
-			printf("package received in %s\n",str);
-			recvfrom( sockfd , buf , 100 , 0 , dest_addr , NULL);
-			iph = (ipv4_header_t* ) buf ;
-			package_t* icmphdr = (package_t*) buf;
-			printf("%d\n" , icmphdr->icmph.type);
-			struct in_addr ia = { iph->source_ip } ;
-			dest_ad = inet_ntoa( ia );
-			if( icmphdr->icmph.type == 0 ) printf("We got a reply!\n");
-			printf( "version:%d from:%s\n" , iph->version >> 4 ,dest_ad );
-		}
-		else printf("fail \n");
-	}
-	
-	close(sockfd);
+		if( FD_ISSET( sockfd , &sock ) ){
 		
+			recvfrom( sockfd , buf , 100 , 0 , dest_addr , NULL);
+			
+			package_t* rcvdpck = (package_t*) buf;
+			printf("id: %d seq:%d\n", ntohs(rcvdpck->icmph.id), ntohs(rcvdpck->icmph.seqnum) );
+			stoptimer( &t );
+			sprint_timervalue( &t , str );
+			printf("package received in %s\n",str);
+			nbrecv ++;
+			struct in_addr ia = { rcvdpck->ipv4h.source_ip } ;
+			reply_addr = inet_ntoa( ia );
+			if( rcvdpck->icmph.type == 0 ) printf("We got a reply!\n");
+			printf( "version:%d from:%s\n" , rcvdpck->ipv4h.version >> 4 , reply_addr );
+		}		
+	}	
+	
+	printf("number of successfull pings: %d\n" , nbrecv );	
+	close(sockfd);
 }
 
 uint16_t cksum(uint16_t *addr, int len)
@@ -148,6 +141,6 @@ int main( int argc , char* argv[] ){
 	get_host_addr( argv[1] , dest_addr );
 	
 	ping_loop( dest_addr , pack );
-	exit(0);
-	
+
+	exit(EXIT_SUCCESS);
 }
