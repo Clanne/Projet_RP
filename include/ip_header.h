@@ -11,7 +11,7 @@ typedef struct{
 	uint8_t ToS;
 	uint16_t length;
 	uint16_t identification ;
-	uint16_t flags;
+	uint16_t flags_offset;
 	uint8_t TTL;
 	uint8_t protocol;
 	uint16_t checksum;
@@ -25,6 +25,8 @@ void forge_ipv4_header( ipv4_header_t* iph  );
 void set_destination( ipv4_header_t* iph , unsigned int ipdest);
 
 void set_source( ipv4_header_t* iph , unsigned int ipsource );
+
+void set_offset( ipv4_header_t* iph , uint16_t offset );
 
 void set_protocol( ipv4_header_t* iph , uint8_t protonum );
 

@@ -11,12 +11,13 @@
 #include <arpa/inet.h>
 #include "ip_header.h"
 
-typedef struct{
+	typedef struct{
 	uint8_t type ;
 	uint8_t code ;
 	uint16_t checksum ;
 	uint16_t id ;
 	uint16_t seqnum ;
+	//~ int data;
 } icmp_header_t ;
 
 void forge_icmp_header( icmp_header_t*icmph );

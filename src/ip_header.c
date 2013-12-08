@@ -11,6 +11,10 @@ void set_destination( ipv4_header_t* iph , unsigned int ipdest){
 	iph->dest_ip  = ipdest ;
 }
 
+void set_offset( ipv4_header_t* iph , uint16_t offset ){
+	iph->flags_offset = offset ;
+}
+
 void set_source( ipv4_header_t* iph , unsigned int ipsource ){
 	iph->source_ip = ipsource ;
 }

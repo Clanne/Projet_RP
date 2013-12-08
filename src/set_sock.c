@@ -10,7 +10,7 @@ int create_raw_socket( int addr_family , int proto ){
 		exit( EXIT_FAILURE );
 	}
 	
-	if(setsockopt( sockfd , IPPROTO_IP, IP_HDRINCL, &on, sizeof(int) ) < 0)
+	if(setsockopt( sockfd , IPPROTO_IP, IP_HDRINCL, &on, sizeof(on) ) < 0)
     {
         perror("setsockopt() error");
         exit(EXIT_FAILURE);
@@ -29,10 +29,10 @@ void get_host_addr( char* hostname , struct sockaddr* dest ){
 	hints.ai_protocol	= IPPROTO_ICMP;
 	
 	if (getaddrinfo (hostname, NULL , &hints , &result) != 0) {
-		perror ("Client error (getaddrinfo)");
+		perror ("error (getaddrinfo)");
 		exit (EXIT_FAILURE);
 	}
 	
-	*dest = *result->ai_addr;
+	*dest = (struct sockaddr)*result->ai_addr;
 	freeaddrinfo( result );
 }
