@@ -1,142 +1,110 @@
 #include "ping.h"
 
 
-char* gethostip(){
-    char buffer[256];
-    struct hostent* h;
-     
-    gethostname(buffer, 256);
-    h = gethostbyname(buffer);
-     
-    return inet_ntoa(*(struct in_addr *)h->h_addr);
-     
+void sighand(int signum){
+	stop = 1;
 }
 
-package_t* forge_ping_pack(  ){
-	package_t* ping = malloc( sizeof( package_t ) );
+void forge_icmp_ping( void* buf , struct sockaddr* dest_addr ){
 	
-	forge_ipv4_header( &ping->ipv4h );
-	set_TTL( &ping->ipv4h , 80 );
-	set_packet_length( &ping->ipv4h , sizeof( package_t ) );
-	set_protocol( &ping->ipv4h , IPPROTO_ICMP );
+	forge_ip_header( buf ,dest_addr , protonum );
+	forge_icmp_header( buf + headeroffset );
+	set_icmp_type( buf + headeroffset , ECHO_REQUEST );
 	
-	ping->ipv4h.identification = htons(getpid());
-	
-	forge_icmp_header( &ping->icmph );
-	set_icmp_type( &ping->icmph , ECHO_REQUEST );
-	
-	return ping;
 }
 
-void ping_loop(struct sockaddr* dest_addr , package_t* pack){
+void ping_loop(struct sockaddr* dest_addr){
 	
 	char str[10];
-	int buf[100];
+	char buf[100];
 	timer t;
 	int sockfd ;
 	int packreceived ;
 	int nbbytes ;
 	fd_set sock;
-	struct timeval timeout;
+	struct timeval waittime;
 	
-	sockfd = create_raw_socket( AF_INET , IPPROTO_ICMP );
-			
-	struct sockaddr_in* ipv4_dest_addr = (struct sockaddr_in* ) dest_addr ;
-	pack->ipv4h.dest_ip = ipv4_dest_addr->sin_addr.s_addr ;
-		
-	char* dest_ad;
-	struct in_addr test = { pack->ipv4h.dest_ip };
-	dest_ad = inet_ntoa( test );
-	printf("sending to: %s\n" , dest_ad );
-		
-	pack->ipv4h.source_ip = inet_addr("192.168.1.12");
-
-	pack->icmph.checksum = cksum((uint16_t*) &pack->icmph , sizeof(icmp_header_t) >>1 );
-	pack->ipv4h.checksum = cksum((uint16_t*) &pack , sizeof(ipv4_header_t) >> 1); 
+	void* pack = malloc(128);
+	forge_icmp_ping( pack , dest_addr );
 	
-	int i;
-	for (i = 0; i < 5 ; i++)
-	{
-		
-		pack->icmph.seqnum = htons(i);
-		
+	sockfd = create_raw_socket( addr_family , protonum );
+	
+	struct in_addr d ;
+	d.s_addr = ((ipv4_header_t*)pack)->dest_ip;
+	printf( "sending to : %s \n" , inet_ntoa( d ) );
+	
+	timer_stats* ts = init_tstats();
+	uint16_t i = 0;
+	while(!stop)
+	{	
+		setseqnum( pack + headeroffset , i );
 		//checksums
-		pack->icmph.checksum = cksum((uint16_t*) &pack->icmph , sizeof(icmp_header_t) >> 1);
-		pack->ipv4h.checksum = cksum((uint16_t*) &pack , sizeof(ipv4_header_t)>> 1 );
-		
-		if( !cksum( (uint16_t*)&pack , sizeof(ipv4_header_t) ) ) printf( "ck error\n" );
-		
+		set_checksum_icmp( pack+headeroffset );
+						
 		FD_ZERO( &sock );
 		FD_SET(sockfd , &sock);
-		timeout.tv_sec = 1;
-		timeout.tv_usec = 0;
+		waittime.tv_sec = 1;
+		waittime.tv_usec = 0;
 		
-		nbbytes = sendto( sockfd , (void*)pack , sizeof( package_t ) , 0 , dest_addr ,  sizeof( struct sockaddr_in ) );
+		nbbytes = sendto( sockfd , pack , 28 , 0 , dest_addr ,  sizeof( struct sockaddr_in ) );
 		if(nbbytes == -1)
 			perror("send \n" );
 		
 		starttimer( &t );
-		//~ while( !timeout( &t ) ){
-			packreceived = select( sockfd + 1 , &sock , NULL , NULL , &timeout );
+		while( !timeout( &t ) ){
+			packreceived = select( sockfd + 1 , &sock , NULL , NULL , &waittime );
 			stoptimer( &t );
 			sprint_timervalue( &t , str );
 			
 			if( FD_ISSET( sockfd , &sock ) && packreceived > 0 ){
 				
-				printf("package received in %s\n",str);
 				recvfrom( sockfd , buf , 100 , 0 , dest_addr , NULL);
-				package_t* rcvpack = (package_t*) buf;
-				printf("%d, %d \n" , ntohs( rcvpack->icmph.id ) , ntohs( rcvpack->icmph.seqnum ) );
-				if( rcvpack->icmph.type == 0 ) printf("We got a reply!\n");
+				icmp_header_t* rcvpack = (icmp_header_t*)( buf + headeroffset);
+				if( rcvpack->type == 0 ){
+					printf("package received in %s icmp_seq:%d\n",str , ntohs( rcvpack->seqnum ));
+					update_timer_stats( &t , ts );		
+				}
+				else printf("fail \n");
 			}
-		//~ }
-		else printf("fail \n");
+		}		
+		i = i + 1;
 	}
-	
+	print_tstats( ts );
+	free_tstats( ts );
+	free(pack);
 	close(sockfd);
-		
 }
 
-uint16_t cksum(uint16_t *addr, int len)
-{
-    int nleft = len;
-    int sum = 0;
-    uint16_t *w = addr;
-    uint16_t answer = 0;
-
-    while (nleft > 1)
-    {
-      sum += *w++;
-      nleft -= 2;
-    }
-
-    if (nleft == 1)
-    {
-      *(unsigned char *)(&answer) = *(unsigned char *)w;
-      sum += answer;
-    }
-
-    sum = (sum >> 16) + (sum & 0xffff);
-    sum += (sum >> 16);
-    answer = ~sum;
-
-    return answer;
-}
 
 int main( int argc , char* argv[] ){
 	
 	if( getuid() != 0 ){
 		printf("You need root privileges to run this program.\n");
-		exit(EXIT_SUCCESS);	
+		exit(EXIT_SUCCESS);
 	}
 	
-	package_t* pack = forge_ping_pack(  );
+	sigset_t mask;
+	sigemptyset( &mask );
+	sigaddset( &mask , SIGINT );
 	
-	struct sockaddr* dest_addr = malloc( sizeof (struct sockaddr_in) ) ;
+	struct sigaction sa;
+	sa.sa_handler = &sighand;
+	sa.sa_mask = mask;
 	
-	get_host_addr( argv[1] , dest_addr );
+	if(sigaction(SIGINT , &sa , NULL ) == -1 ){
+		perror("sigaction\n");
+		exit(EXIT_FAILURE);
+	}
 	
-	ping_loop( dest_addr , pack );
+	forge_ip_header = &forge_ipv4_header;
+	
+	struct sockaddr* dest_addr = malloc( sizeof (struct sockaddr_in6) ) ;
+	
+	get_host_addr( argv[1] , dest_addr , addr_family , protonum );
+	
+	ping_loop( dest_addr );
+	
+	free( dest_addr );
 	exit(0);
 	
 }

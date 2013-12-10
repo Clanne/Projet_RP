@@ -9,9 +9,10 @@
 #include <unistd.h> 
 #include <string.h>
 #include <arpa/inet.h>
+#include "checksum.h"
 #include "ip_header.h"
 
-	typedef struct{
+typedef struct{
 	uint8_t type ;
 	uint8_t code ;
 	uint16_t checksum ;
@@ -20,8 +21,12 @@
 	//~ int data;
 } icmp_header_t ;
 
-void forge_icmp_header( icmp_header_t*icmph );
+void forge_icmp_header( void* buf );
 
-void set_icmp_type( icmp_header_t* icmph , uint8_t type );
+void set_icmp_type( void* buf , uint8_t type );
+
+void setseqnum( void* buf , uint16_t seqnum );
+
+void set_checksum_icmp( void* buf );
 
 #endif

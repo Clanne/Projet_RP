@@ -10,6 +10,6 @@
 
 int create_raw_socket( int addr_family , int proto );
 
-void get_host_addr( char* hostname , struct sockaddr* dest );
+void get_host_addr( char* hostname , struct sockaddr* dest , unsigned int ip_type , unsigned int protonum );
 
 #endif

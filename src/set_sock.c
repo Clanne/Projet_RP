@@ -18,21 +18,26 @@ int create_raw_socket( int addr_family , int proto ){
     return sockfd;
 }
 
-void get_host_addr( char* hostname , struct sockaddr* dest ){
+void get_host_addr( char* hostname , struct sockaddr* dest , unsigned int ip_type , unsigned int protonum){
 	
 	struct addrinfo *result , hints;
 	
 	memset (&hints, 0, sizeof (struct addrinfo));
-	hints.ai_family		= AF_INET;
+	hints.ai_family		= ip_type;
 	hints.ai_socktype	= SOCK_RAW;
 	hints.ai_flags		= 0;
-	hints.ai_protocol	= IPPROTO_ICMP;
+	hints.ai_protocol	= protonum;
 	
 	if (getaddrinfo (hostname, NULL , &hints , &result) != 0) {
-		perror ("error (getaddrinfo)");
+		perror ("error getaddrinfo");
 		exit (EXIT_FAILURE);
 	}
 	
-	*dest = (struct sockaddr)*result->ai_addr;
+	if( ip_type == AF_INET )
+		*dest = (struct sockaddr)*result->ai_addr;
+	else{
+		struct sockaddr_in6* ipv6dest = (struct sockaddr_in6*)result->ai_addr;
+		*(struct sockaddr_in6*)dest  = (*ipv6dest);
+	}
 	freeaddrinfo( result );
 }
