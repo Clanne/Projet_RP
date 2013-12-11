@@ -9,7 +9,7 @@
 #include "checksum.h"
 
 #define SOURCEIP "192.168.1.12"
-#define SOURCEIP6 "fe80::216:e3ff:feaf:815d"
+#define SOURCEIP6 "2001:660:2402:102:216:e3ff:feaf:815d"
 
 typedef struct{
 	uint64_t first;
@@ -56,10 +56,13 @@ void set_ipv4_checksum( void* buf );
 
 void forge_ipv6_header( void* buf , struct sockaddr* destination , uint8_t proto );
 
+void ipv6_set_length( ipv6_header_t* iph , uint16_t length );
+
 void ipv6_set_hop_limit( ipv6_header_t* buf, uint16_t hop_limit );
 
 void ipv6_set_destination( ipv6_header_t* buf , struct sockaddr_in6 * dest );
 
 void ipv6_set_source( ipv6_header_t* buf );
+
 
 #endif

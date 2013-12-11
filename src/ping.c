@@ -7,11 +7,12 @@ void sighand(int signum){
 
 void forge_icmp_ping( void* buf , struct sockaddr* dest_addr ){
 	
-	forge_ip_header( buf ,dest_addr , protonum );
+	forge_ip_header( buf ,dest_addr , IPPROTO_ICMP );
 	forge_icmp_header( buf + headeroffset );
-	set_icmp_type( buf + headeroffset , ECHO_REQUEST );
+	set_icmp_type( buf + headeroffset , ECHO_REQUEST);
 	
 }
+
 
 void ping_loop(struct sockaddr* dest_addr){
 	
@@ -57,11 +58,12 @@ void ping_loop(struct sockaddr* dest_addr){
 			sprint_timervalue( &t , str );
 			
 			if( FD_ISSET( sockfd , &sock ) && packreceived > 0 ){
-				
+				printf("received response\n");
 				recvfrom( sockfd , buf , 100 , 0 , dest_addr , NULL);
 				icmp_header_t* rcvpack = (icmp_header_t*)( buf + headeroffset);
 				if( rcvpack->type == 0 ){
-					printf("package received in %s icmp_seq:%d\n",str , ntohs( rcvpack->seqnum ));
+					d.s_addr = ((ipv4_header_t*)buf)->source_ip;
+					printf("package received in %s icmp_seq:%d from %s\n",str , ntohs( rcvpack->seqnum ) , inet_ntoa(d));
 					update_timer_stats( &t , ts );		
 				}
 				else printf("fail \n");
@@ -74,6 +76,22 @@ void ping_loop(struct sockaddr* dest_addr){
 	free(pack);
 	close(sockfd);
 }
+
+//~ void read_pack( void* buf ){
+	//~ ipv4_header_t* iph = (ipv4_header_t*)buf;
+	//~ struct in_addr d ;
+	//~ d.s_addr = iph->source_ip;
+	//~ printf( "received from : %s \n" , inet_ntoa( d ) );
+	//~ if( iph->protocol == 17){
+		//~ udp_header_t* udph = (udp_header_t*)(buf+ (iph->version - (4<<4)));
+		//~ printf( "received udp pack : source: %d dest: %d\n" , ntohs(udph->sourcePort) , ntohs(udph->destinationPort) );
+	//~ }
+	//~ else if( iph->protocol == 1){
+		//~ icmp_header_t* icmph = (icmp_header_t*)(buf+ (iph->version -(4<<4)));
+		//~ printf("received icmp pack : type:%d code:%d \n" , ntohs(icmph->type) ,ntohs(icmph->code));
+	//~ }
+	//~ 
+//~ }
 
 
 int main( int argc , char* argv[] ){

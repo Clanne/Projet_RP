@@ -22,6 +22,8 @@ int protonum = IPPROTO_ICMP;
 int addr_family = AF_INET;
 int headeroffset = sizeof( ipv4_header_t );
 
+//~ void read_pack( void* buf );
+
 void forge_icmp_ping( void* buf , struct sockaddr* dest_addr );
 
 void ping_loop(struct sockaddr* dest_addr );
