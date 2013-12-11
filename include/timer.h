@@ -37,13 +37,15 @@ struct timeval tvdiff( struct timeval debut , struct timeval fin );
 
 void update_timer_stats(timer* t , timer_stats* stats );
 
+float last_result( timer_stats* ts );
+
 float timeval_to_float(struct timeval tv);
 
 void sprint_timeval(struct timeval* tv , char* retstr );
 
 void sprint_timervalue(timer* t , char* retstr);//renvoit chaine de caracteres representant le temps en ms
 
-tv_list* statlist_add(tv_list* list , float val );
+void statlist_add(tv_list** list , float val );
 
 float calc_average( tv_list* list );
 

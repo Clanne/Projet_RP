@@ -3,8 +3,8 @@
 void forge_ipv4_header( void* buf , struct sockaddr* destination , uint8_t protonum ){
 	ipv4_header_t* iph = (ipv4_header_t*) buf; 
 	memset( buf , 0 , sizeof( ipv4_header_t ) );	
-	iph->version += 4 << 4;
-	iph->version += 5;
+	iph->version = 4;
+	iph->IHL= 5;
 	set_destination( iph ,(struct sockaddr_in *) destination );
 	set_source( iph , inet_addr(SOURCEIP) );
 	set_TTL(iph, 80);

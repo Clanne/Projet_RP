@@ -17,7 +17,8 @@ typedef struct{
 } uint128_t ;
 
 typedef struct{
-	uint8_t version;
+	uint8_t IHL : 4;
+	uint8_t version : 4;
 	uint8_t ToS;
 	uint16_t length;
 	uint16_t identification ;
@@ -30,9 +31,9 @@ typedef struct{
 }ipv4_header_t;
 
 typedef struct{
-	unsigned int version : 4;
-	unsigned int traffic_class : 8;
 	unsigned int flow_label : 20 ;
+	unsigned int traffic_class : 8;
+	unsigned int version : 4;
 	uint16_t length;
 	uint8_t next_header;
 	uint8_t hop_limit;

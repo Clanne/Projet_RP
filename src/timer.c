@@ -45,7 +45,11 @@ void update_timer_stats(timer* t , timer_stats* stats){
 	if( resultat >  stats->max )  stats->max = resultat;
 	if( resultat < stats->min  || stats->min < 0 ) stats->min = resultat;
 	stats->totaltime += resultat;
-	stats->value_list = statlist_add( stats->value_list , resultat );
+	statlist_add( &stats->value_list , resultat );
+}
+
+float last_result( timer_stats* ts ){
+	return ts->value_list->time  ;
 }
 
 struct timeval tvadd( struct timeval tv1 , struct timeval tv2){
@@ -75,11 +79,11 @@ void sprint_timervalue(timer* t , char* retstr ){
 	sprint_timeval( &t->resultat , retstr );
 }
 
-tv_list* statlist_add(tv_list* list , float val ){
+void statlist_add(tv_list** list , float val ){
 	tv_list* maillon = malloc( sizeof( tv_list ) );
 	maillon->time = val;
-	maillon->next = list;
-	return maillon;
+	maillon->next = *list;
+	*list = maillon ;
 }
 
 float calc_average( tv_list* list ){
