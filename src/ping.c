@@ -19,7 +19,7 @@ int icmp_ping( void* pack  , struct sockaddr* dest_addr , int sockfd , timer_sta
 	waittime.tv_sec = 1;
 	waittime.tv_usec = 0;
 		
-	if( sendto( sockfd , pack , 28 , 0 , dest_addr ,  sizeof( struct sockaddr_in) ) < 0 )
+	if( sendto( sockfd , pack , 28 , 0 , dest_addr ,  addrlen ) < 0 )
 		perror("send \n" );
 	
 	starttimer( &t );
@@ -30,11 +30,12 @@ int icmp_ping( void* pack  , struct sockaddr* dest_addr , int sockfd , timer_sta
 		select( sockfd + 1 , &sock , NULL , NULL , &waittime );	
 		if( FD_ISSET( sockfd , &sock ) ){
 			
-			recvfrom( sockfd , buf , 100 , 0 , dest_addr , NULL );
+			recvfrom( sockfd , buf , 100 , 0 , dest_addr , &addrlen );
 			stoptimer( &t );
 			if( read_package( buf ) == seqnum ){
 				if( ts != NULL ) update_timer_stats( &t , ts );
 				success = 1;
+				break ;
 			}
 			else waittime = t.resultat ;
 		}
@@ -73,8 +74,10 @@ void ping_loop(struct sockaddr* dest_addr){
 	{	
 		setseqnum( pack + headeroffset , i );
 		set_checksum_icmp( pack+headeroffset );
-		if ( icmp_ping( pack ,  dest_addr , sockfd , ts ) == 1 ) 
+		if ( icmp_ping( pack ,  dest_addr , sockfd , ts ) == 1 ){
+			usleep( 1000*(1000 - (int)last_result( ts )) );
 			printf( "paquet recu en %0.3fms seq_num: %u\n" , last_result( ts ) , i );
+		}
 		sigpending( &mask ) ;
 		if( sigismember( &mask , SIGINT ) ) stop = 1 ;
 		i = i + 1;

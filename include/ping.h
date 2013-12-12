@@ -16,8 +16,7 @@
 #include "ip_header.h"
 #include "timer.h"
 
-void (*forge_ip_header)(void*, struct sockaddr* , uint8_t);
-int stop = 0;
+void (*forge_ip_header)(void*, struct sockaddr*  , uint8_t);
 int protonum = IPPROTO_ICMP;
 int addr_family = AF_INET;
 socklen_t addrlen = sizeof( struct sockaddr_in );

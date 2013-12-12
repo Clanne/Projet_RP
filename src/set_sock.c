@@ -1,6 +1,20 @@
 #include "set_sock.h"
 
 
+void get_interface_ip( char* inter , struct sockaddr* res , int sockfd ){
+	
+	struct ifreq ifr;
+	
+	ifr.ifr_addr.sa_family = AF_INET;
+
+	strncpy(ifr.ifr_name, inter, IFNAMSIZ-1);
+	
+	ioctl(sockfd, SIOCGIFADDR, &ifr);
+	
+	*res = ifr.ifr_addr ;	
+}
+
+
 int create_raw_socket( int addr_family , int proto ){
 	
 	int sockfd , on;
