@@ -8,8 +8,8 @@
 #include <arpa/inet.h>
 #include "checksum.h"
 
-#define SOURCEIP "192.168.1.12"
-#define SOURCEIP6 "2001:660:2402:102:216:e3ff:feaf:815d"
+#define SOURCEIP "82.242.213.120 "
+#define SOURCEIP6 "fe80::216:e3ff:feaf:815d"
 
 typedef struct{
 	uint64_t first;
@@ -17,7 +17,8 @@ typedef struct{
 } uint128_t ;
 
 typedef struct{
-	uint8_t version;
+	uint8_t IHL : 4;
+	uint8_t version : 4;
 	uint8_t ToS;
 	uint16_t length;
 	uint16_t identification ;
@@ -30,9 +31,9 @@ typedef struct{
 }ipv4_header_t;
 
 typedef struct{
-	unsigned int version : 4;
-	unsigned int traffic_class : 8;
 	unsigned int flow_label : 20 ;
+	unsigned int traffic_class : 8;
+	unsigned int version : 4;
 	uint16_t length;
 	uint8_t next_header;
 	uint8_t hop_limit;
@@ -56,13 +57,10 @@ void set_ipv4_checksum( void* buf );
 
 void forge_ipv6_header( void* buf , struct sockaddr* destination , uint8_t proto );
 
-void ipv6_set_length( ipv6_header_t* iph , uint16_t length );
-
 void ipv6_set_hop_limit( ipv6_header_t* buf, uint16_t hop_limit );
 
 void ipv6_set_destination( ipv6_header_t* buf , struct sockaddr_in6 * dest );
 
 void ipv6_set_source( ipv6_header_t* buf );
-
 
 #endif

@@ -6,7 +6,13 @@
 #include <string.h>
 #include <sys/types.h> 
 #include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <net/if.h>
 #include <netdb.h>
+
+void get_interface_ip( char* inter , struct sockaddr* res , int sockfd );
 
 int create_raw_socket( int addr_family , int proto );
 

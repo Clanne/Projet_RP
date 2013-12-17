@@ -13,16 +13,26 @@
 #include <netdb.h>
 #include "set_sock.h"
 #include "icmp_header.h"
+#include "udp_header.h"
+#include "checksum.h"
 #include "ip_header.h"
 #include "timer.h"
 
-void (*forge_ip_header)(void*, struct sockaddr* , uint8_t);
-int stop = 0;
-int protonum = IPPROTO_ICMP;
+int protonum = IPPROTO_UDP;
+void (*forge_ip_header)(void*, struct sockaddr*  , uint8_t);
 int addr_family = AF_INET;
+socklen_t addrlen = sizeof( struct sockaddr_in );
 int headeroffset = sizeof( ipv4_header_t );
 
-//~ void read_pack( void* buf );
+
+
+void (*forge_ip_header)(void*, struct sockaddr* , uint8_t);
+
+void forge_udp_ping( void* buf, struct sockaddr* dest_addr );
+
+int icmp_ping( void* pack  , struct sockaddr* dest_addr , int sockfd , timer_stats* ts);
+
+int read_package( void* rcvpack );
 
 void forge_icmp_ping( void* buf , struct sockaddr* dest_addr );
 

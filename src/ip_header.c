@@ -3,8 +3,8 @@
 void forge_ipv4_header( void* buf , struct sockaddr* destination , uint8_t protonum ){
 	ipv4_header_t* iph = (ipv4_header_t*) buf; 
 	memset( buf , 0 , sizeof( ipv4_header_t ) );	
-	iph->version += 4 << 4;
-	iph->version += 5;
+	iph->version = 4;
+	iph->IHL= 5;
 	set_destination( iph ,(struct sockaddr_in *) destination );
 	set_source( iph , inet_addr(SOURCEIP) );
 	set_TTL(iph, 80);
@@ -45,14 +45,8 @@ void forge_ipv6_header( void* buf , struct sockaddr* destination , uint8_t proto
 	memset( iph , 0 , sizeof( ipv6_header_t ) );
 	iph->version = 6;
 	iph->next_header = proto;
-	ipv6_set_length( iph , sizeof( ipv6_header_t ) + 8 );
 	ipv6_set_hop_limit( buf , 80 );
 }
-
-void ipv6_set_length( ipv6_header_t* iph , uint16_t length ){
-	iph->length = htons( length );
-}
-
 
 void ipv6_set_hop_limit( ipv6_header_t* buf, uint16_t hop_limit ){
 	buf->hop_limit = htons( hop_limit );
